@@ -1,4 +1,4 @@
-package com.courseplatform.courseapi.model;
+package com.courseplatform.model;
 
 public enum Role {
     ADMIN,

@@ -1,4 +1,4 @@
-package com.courseplatform.courseapi.model;
+package com.courseplatform.model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.MappedSuperclass;

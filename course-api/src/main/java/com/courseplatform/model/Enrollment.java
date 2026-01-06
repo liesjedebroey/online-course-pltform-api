@@ -1,4 +1,4 @@
-package com.courseplatform.courseapi.model;
+package com.courseplatform.model;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
