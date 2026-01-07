@@ -35,21 +35,29 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         final String jwt;
         final String userName;
 
-        //Check if the Authorization header is present and starts with Bearer
+        // 1. Snelle check: Is er een Bearer header? Zo nee -> doortrappen naar volgende filter
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
             return;
         }
 
         try {
-            //Extract the JWT token from the header
-            jwt = authHeader.substring(7);
-            userName = jwtService.extractUsername(jwt);
+            // 2. Haal de token eruit en maak hem schoon
+            jwt = authHeader.replace("Bearer ", "").trim();
 
-            //Validate and set authentication
+            // DEBUG LOGS (Deze zie je in je IntelliJ console)
+            System.out.println("--- FILTER DEBUG ---");
+            System.out.println("Token ontvangen: " + jwt.substring(0, 10) + "...");
+
+            // 3. Haal username uit de token
+            userName = jwtService.extractUsername(jwt);
+            System.out.println("Username uit token: " + userName);
+
+            // 4. Als er een username is en we zijn nog niet ingelogd in deze sessie
             if (userName != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                 UserDetails userDetails = this.userDetailsService.loadUserByUsername(userName);
 
+                // 5. Check of de token echt geldig is voor deze gebruiker
                 if (jwtService.isTokenValid(jwt, userDetails)) {
                     UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                             userDetails,
@@ -58,17 +66,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     );
                     authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
-                    //Set the user in the Security Context
+                    // 6. DE CRUCIALE STAP: Zet de gebruiker in de SecurityContext
                     SecurityContextHolder.getContext().setAuthentication(authToken);
+                    System.out.println("Systeem: Gebruiker " + userName + " succesvol geauthenticeerd.");
                 }
             }
         } catch (Exception e) {
-            //If the token is malformed or invalid, we just continue without authenticating
-            //This prevents 500 errors on public endpoints like /register
-            logger.error("Could not set user authentication: {}", e);
+            // Vang fouten op (zoals MalformedJwt of ExpiredJwt) zodat de app niet crasht
+            System.out.println("Systeem: JWT Validatie mislukt: " + e.getMessage());
         }
 
-        //Continue the filter chain
+        // 7. Ga door naar het volgende filter (of de Controller)
         filterChain.doFilter(request, response);
     }
 }
