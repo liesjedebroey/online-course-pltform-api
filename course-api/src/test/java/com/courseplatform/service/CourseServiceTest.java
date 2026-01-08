@@ -15,10 +15,16 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import java.util.Arrays;
 import java.util.List;
@@ -76,19 +82,21 @@ class CourseServiceTest {
     }
 
     @Test
-    void getAllCourses_ShouldReturnAllCourses() {
+    void getAllCourses_ShouldReturnPagedCourses() {
         // Arrange
+        Pageable pageable = PageRequest.of(0, 10);
         List<Course> courses = Arrays.asList(course);
-        when(courseRepository.findAll()).thenReturn(courses);
+        Page<Course> coursePage = new PageImpl<>(courses);
+
+        when(courseRepository.findAll(pageable)).thenReturn(coursePage);
 
         // Act
-        List<CourseResponse> result = courseService.getAllCourses();
+        Page<CourseResponse> result = courseService.getAllCourses(pageable);
 
         // Assert
         assertNotNull(result);
-        assertEquals(1, result.size());
-        assertEquals("Java Masterclass", result.get(0).getTitle());
-        verify(courseRepository, times(1)).findAll();
+        assertEquals(1, result.getContent().size());
+        verify(courseRepository).findAll(pageable);
     }
 
     @Test
@@ -143,11 +151,17 @@ class CourseServiceTest {
         request.setTitle("Updated Title");
         request.setDescription("Updated Description");
 
+        // Fix: Zorg dat findById een Optional teruggeeft
         when(courseRepository.findById(1L)).thenReturn(Optional.of(course));
+
+        // Security Context Mocks
         when(securityContext.getAuthentication()).thenReturn(authentication);
         when(authentication.getName()).thenReturn("john_instructor");
-        when(authentication.getAuthorities()).thenReturn(
-                Arrays.asList(new SimpleGrantedAuthority("ROLE_INSTRUCTOR")));
+
+        // DE FIX VOOR DE FOUTMELDING:
+        doReturn(Arrays.asList(new SimpleGrantedAuthority("ROLE_INSTRUCTOR")))
+                .when(authentication).getAuthorities();
+
         when(courseRepository.save(any(Course.class))).thenReturn(course);
 
         // Act
@@ -171,8 +185,7 @@ class CourseServiceTest {
         when(courseRepository.findById(1L)).thenReturn(Optional.of(course));
         when(securityContext.getAuthentication()).thenReturn(authentication);
         when(authentication.getName()).thenReturn("jane_instructor");
-        when(authentication.getAuthorities()).thenReturn(
-                Arrays.asList(new SimpleGrantedAuthority("ROLE_INSTRUCTOR")));
+        when(authentication.getAuthorities()).thenReturn((List) Arrays.asList(new SimpleGrantedAuthority("ROLE_INSTRUCTOR")));
 
         // Act & Assert
         assertThrows(UnauthorizedActionException.class, () -> {

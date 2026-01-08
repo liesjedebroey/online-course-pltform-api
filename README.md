@@ -19,9 +19,9 @@ Secure REST API for online course platform with JWT authentication and role-base
 - [x] [cite_start]**MySQL**: Volledig functionele database integratie[cite: 150, 172].
 
 ## 🚀 Excellente Score (Extra's)
-- [ ] [cite_start]**Pagination & Sorting**: Voor het ophalen van cursussen.
-- [ ] [cite_start]**Swagger/OpenAPI**: Interactieve API documentatie.
-- [ ] [cite_start]**Unit Tests**: Testen van de business logica in de Services.
+- [x] [cite_start]**Pagination & Sorting**: Voor het ophalen van cursussen.
+- [x] [cite_start]**Swagger/OpenAPI**: Interactieve API documentatie.
+- [x] [cite_start]**Unit Tests**: Testen van de business logica in de Services.
 - [ ] [cite_start]**Refresh Tokens**: Mechanisme om JWT's te vernieuwen.
 
 ## 📁 Oplevering
