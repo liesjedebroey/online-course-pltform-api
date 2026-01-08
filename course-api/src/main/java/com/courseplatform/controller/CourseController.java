@@ -1,13 +1,13 @@
 package com.courseplatform.controller;
 
-import com.courseplatform.model.Course;
+import com.courseplatform.dto.CourseRequest;
+import com.courseplatform.dto.CourseResponse;
 import com.courseplatform.service.CourseService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.sql.PreparedStatement;
 import java.util.List;
 
 @RestController
@@ -17,39 +17,39 @@ public class CourseController {
 
     private final CourseService courseService;
 
+    // Public endpoint - anyone can view courses
     @GetMapping
-    public ResponseEntity<List<Course>> getAllCourses() {
-        // Haalt de cursussen op die de DataLoader in de db heeft gezet
+    public ResponseEntity<List<CourseResponse>> getAllCourses() {
         return ResponseEntity.ok(courseService.getAllCourses());
     }
 
-    @GetMapping("/{id}") // Voeg /{id} toe!
-    public ResponseEntity<Course> getCourseById(@PathVariable Long id) {
-        return courseService.getCourseById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    // Public endpoint - anyone can view a specific course
+    @GetMapping("/{id}")
+    public ResponseEntity<CourseResponse> getCourseById(@PathVariable Long id) {
+        return ResponseEntity.ok(courseService.getCourseById(id));
     }
 
-    // POST /api/courses -> Alleen INSTRUCTOR of ADMIN    @PostMapping
+    // Only INSTRUCTOR or ADMIN can create courses
     @PostMapping
     @PreAuthorize("hasAnyRole('INSTRUCTOR', 'ADMIN')")
-    public ResponseEntity<Course> createCourse(@RequestBody Course course) {
-        return ResponseEntity.ok(courseService.createCourse(course));
+    public ResponseEntity<CourseResponse> createCourse(@RequestBody CourseRequest request) {
+        return ResponseEntity.ok(courseService.createCourse(request));
     }
 
-    // PUT /api/courses/{id} -> INSTRUCTOR (eigen) of ADMIN
+    // INSTRUCTOR (own course) or ADMIN can update
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('INSTRUCTOR', 'ADMIN')")
-    public ResponseEntity<Course> updateCourse(@PathVariable Long id, @RequestBody Course course) {
-        return ResponseEntity.ok(courseService.updateCourseById(id, course));
+    public ResponseEntity<CourseResponse> updateCourse(
+            @PathVariable Long id,
+            @RequestBody CourseRequest request) {
+        return ResponseEntity.ok(courseService.updateCourseById(id, request));
     }
 
-    // DELETE /api/courses/{id} -> Alleen ADMIN    @DeleteMapping("/{id}")
+    // Only ADMIN can delete courses
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Void> deleteCourseById(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteCourse(@PathVariable Long id) {
         courseService.deleteCourseById(id);
         return ResponseEntity.noContent().build();
     }
-
 }

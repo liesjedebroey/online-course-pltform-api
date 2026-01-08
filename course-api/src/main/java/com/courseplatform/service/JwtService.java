@@ -6,6 +6,7 @@ import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Value;
 
 import javax.crypto.SecretKey;
 import java.util.Date;
@@ -16,10 +17,14 @@ import java.util.function.Function;
 @Service
 public class JwtService {
 
-    // Must be at least 256 bits for HS256
-    private static final String SECRET_KEY = "mysecretkeymysecretkeymysecretkeymysecretkeymysecretkeymysecretkey";
+    // Gebruik @Value om de waarde uit application.properties te lezen
+    @Value("${jwt.secret}")
+    private String secretKey;
 
-    // Extra constants
+    // Haal ook de vervaltijd uit je properties (optioneel, maar netjes)
+    @Value("${jwt.expiration-hours}")
+    private int expirationHours;
+
     public static final String TOKEN_PREFIX = "Bearer ";
     public static final String HEADER_STRING = "Authorization";
 
@@ -69,7 +74,9 @@ public class JwtService {
     }
 
     private SecretKey getSignInKey() {
-        byte[] keyBytes = Decoders.BASE64.decode(SECRET_KEY);
+        byte[] keyBytes = Decoders.BASE64.decode(secretKey);
         return Keys.hmacShaKeyFor(keyBytes);
     }
+
+
 }

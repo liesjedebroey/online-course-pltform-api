@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 import java.util.List;
 
-@RequestMapping
+@Repository
 public interface CourseRepository extends JpaRepository<Course, Long> {
     //Required to list courses taught by a specific instructor
     List<Course> findByInstructorId(Long instructorId);
