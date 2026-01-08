@@ -18,7 +18,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(UnauthorizedActionException.class)
     public ResponseEntity<Object> handleException(UnauthorizedActionException ex){
-        return buildResponse(ex.getMessage(), HttpStatus.FORBIDDEN);
+        return buildResponse(ex.getMessage(), HttpStatus.UNAUTHORIZED);
     }
 
     @ExceptionHandler(DuplicateEnrollmentException.class)
@@ -33,6 +33,16 @@ public class GlobalExceptionHandler {
         response.put("error", status.getReasonPhrase());
         response.put("message", message);
         return new ResponseEntity<>(response, status);
+    }
+
+    @ExceptionHandler(org.springframework.security.access.AccessDeniedException.class)
+    public ResponseEntity<Object> handleAccessDeniedException(Exception ex) {
+        return buildResponse("Je hebt geen toestemming om deze actie uit te voeren.", HttpStatus.FORBIDDEN);
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<Object> handleGlobalException(Exception ex) {
+        return buildResponse("Er is een onverwachte fout opgetreden: " + ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
 }

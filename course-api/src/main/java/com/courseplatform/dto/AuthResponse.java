@@ -10,5 +10,5 @@ import lombok.Setter;
 public class AuthResponse {
     private String token;
     private String username;
-    private String role; //Useful to use/hide buttons in Frontend
+    private String role;
 }
