@@ -13,17 +13,16 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 public class JwtService {
 
-    // Gebruik @Value om de waarde uit application.properties te lezen
     @Value("${jwt.secret}")
     private String secretKey;
 
-    // Haal ook de vervaltijd uit je properties (optioneel, maar netjes)
-    @Value("${jwt.expiration-hours}")
-    private int expirationHours;
+    @Value("${jwt.expiration-ms}")
+    private long jwtExpiration;
 
     public static final String TOKEN_PREFIX = "Bearer ";
     public static final String HEADER_STRING = "Authorization";

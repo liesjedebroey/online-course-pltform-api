@@ -1,14 +1,15 @@
 package com.courseplatform.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
-@Getter
-@Setter
+
+@Data
+@Builder
 @AllArgsConstructor
+@NoArgsConstructor
 public class AuthResponse {
-    private String token;
+    private String accessToken;
+    private String refreshToken;
     private String username;
     private String role;
 }

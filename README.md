@@ -22,7 +22,7 @@ Secure REST API for online course platform with JWT authentication and role-base
 - [x] [cite_start]**Pagination & Sorting**: Voor het ophalen van cursussen.
 - [x] [cite_start]**Swagger/OpenAPI**: Interactieve API documentatie.
 - [x] [cite_start]**Unit Tests**: Testen van de business logica in de Services.
-- [ ] [cite_start]**Refresh Tokens**: Mechanisme om JWT's te vernieuwen.
+- [x] [cite_start]**Refresh Tokens**: Mechanisme om JWT's te vernieuwen.
 
 ## 📁 Oplevering
 - [x] [cite_start]Postman Collectie Export[cite: 156, 170].

@@ -15,6 +15,17 @@ public class UserService {
 
     private final UserRepository userRepository;
 
+    public User getUserByUsername(String username) {
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with username: " + username));
+    }
+
+    // Optioneel: handig voor je profiel-pagina in de frontend later
+    public User getUserById(Long id) {
+        return userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
+    }
+
     public List<User> getAllUsers() {
         return userRepository.findAll();
     }

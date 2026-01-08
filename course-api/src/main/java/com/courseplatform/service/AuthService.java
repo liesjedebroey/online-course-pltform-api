@@ -5,12 +5,12 @@ import com.courseplatform.dto.LoginRequest;
 import com.courseplatform.dto.RegisterRequest;
 import com.courseplatform.exception.UnauthorizedActionException;
 import com.courseplatform.model.User;
+import com.courseplatform.model.RefreshToken;
 import com.courseplatform.repository.UserRepository;
-import com.courseplatform.service.JwtService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -19,14 +19,14 @@ public class AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
+    private final RefreshTokenService refreshTokenService; // Toevoegen!
 
     public String register(RegisterRequest request) {
-        // Validation: check if user exists
         if (userRepository.existsByUsername(request.getUserName())) {
             throw new UnauthorizedActionException("Username '" + request.getUserName() + "' is already taken.");
         }
 
-    User newUser = new User();
+        User newUser = new User();
         newUser.setUsername(request.getUserName());
         newUser.setEmail(request.getEmail());
         newUser.setRole(request.getRole());
@@ -36,21 +36,40 @@ public class AuthService {
         return "User registered successfully!";
     }
 
+    @Transactional
     public AuthResponse login(LoginRequest request) {
-        //1 FIND USER
         User user = userRepository.findByUsername(request.getUserName())
                 .orElseThrow(() -> new UnauthorizedActionException("Invalid username or password."));
 
-        //2 CHECK PASSWORD
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             throw new UnauthorizedActionException("Invalid username or password");
         }
 
-        //3 GENERATE TOKEN VIA JWT SERVICE
-        String token = jwtService.generateToken(user);
+        String accessToken = jwtService.generateToken(user);
+        RefreshToken refreshToken = refreshTokenService.createRefreshToken(user.getUsername());
 
-        //4 RETURN RESPONSE WITH TOKEN, USERNAME, ROLE
-        return new AuthResponse(token, user.getUsername(), user.getRole().name());
+        return AuthResponse.builder()
+                .accessToken(accessToken)
+                .refreshToken(refreshToken.getToken())
+                .username(user.getUsername())
+                .role(user.getRole().name())
+                .build();
     }
 
+    @Transactional
+    public AuthResponse refreshToken(String requestToken) {
+        return refreshTokenService.findByToken(requestToken)
+                .map(refreshTokenService::verifyExpiration)
+                .map(RefreshToken::getUser)
+                .map(user -> {
+                    String accessToken = jwtService.generateToken(user);
+                    return AuthResponse.builder()
+                            .accessToken(accessToken)
+                            .refreshToken(requestToken)
+                            .username(user.getUsername())
+                            .role(user.getRole().name())
+                            .build();
+                })
+                .orElseThrow(() -> new RuntimeException("Refresh token is not in database!"));
+    }
 }

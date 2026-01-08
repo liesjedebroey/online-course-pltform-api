@@ -2,6 +2,7 @@ package com.courseplatform.repository;
 
 import com.courseplatform.model.Course;
 import com.courseplatform.model.Enrollment;
+import com.courseplatform.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import java.util.List;

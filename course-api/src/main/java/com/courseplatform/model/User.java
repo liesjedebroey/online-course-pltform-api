@@ -35,6 +35,12 @@ public class User extends AuditModel implements UserDetails {
     @Column(nullable = false)
     private Role role;
 
+    @OneToMany(mappedBy = "student", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Enrollment> enrollments = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<RefreshToken> refreshTokens = new ArrayList<>();
+
     //USERDETAIL METHODS
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
